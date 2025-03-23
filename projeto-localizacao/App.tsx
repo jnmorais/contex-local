@@ -1,62 +1,33 @@
-import React, { useEffect, useState } from "react";
-import { StyleSheet, Text, View, Button } from "react-native";
-import * as Location from "expo-location";
+import React from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { Ionicons } from '@expo/vector-icons';
+import MapScreen from './MapScreen';
+import HistoryScreen from './HistoryScreen';
 
-// Define o tipo para a localização
-interface LocationObject {
-  coords: {
-    latitude: number;
-    longitude: number;
-  };
-}
+const Tab = createBottomTabNavigator();
 
 export default function App() {
-  const [location, setLocation] = useState<LocationObject | null>(null);
-  const [errorMsg, setErrorMsg] = useState("");
-
-  const getLocation = async () => {
-    // Solicitar permissão
-    const { status } = await Location.requestForegroundPermissionsAsync();
-
-    if (status !== "granted") {
-      setErrorMsg("Permissão negada para acessar a localização");
-      return;
-    }
-
-    // Capturar a localização
-    const currentLocation = await Location.getCurrentPositionAsync({});
-    setLocation(currentLocation as LocationObject);
-  };
-
-  useEffect(() => {
-    getLocation();
-  }, []);
-
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Localização do Usuário</Text>
-      {location ? (
-        <Text>
-          Latitude: {location.coords.latitude}, Longitude:{" "}
-          {location.coords.longitude}
-        </Text>
-      ) : (
-        <Text>{errorMsg || "Obtendo localização..."}</Text>
-      )}
-      <Button title="Atualizar Localização" onPress={getLocation} />
-    </View>
+    <NavigationContainer>
+      <Tab.Navigator
+        screenOptions={({ route }) => ({
+          tabBarIcon: ({ focused, color, size }) => {
+            let iconName;
+
+            if (route.name === 'Mapa') {
+              iconName = focused ? 'map' : 'map-outline';
+            } else if (route.name === 'Histórico') {
+              iconName = focused ? 'list' : 'list-outline';
+            }
+
+            return <Ionicons name={iconName} size={size} color={color} />;
+          },
+        })}
+      >
+        <Tab.Screen name="Mapa" component={MapScreen} />
+        <Tab.Screen name="Histórico" component={HistoryScreen} />
+      </Tab.Navigator>
+    </NavigationContainer>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 20,
-  },
-});
